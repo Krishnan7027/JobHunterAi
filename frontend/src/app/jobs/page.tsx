@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -349,7 +349,7 @@ function JobCard({
 // Page component
 // ---------------------------------------------------------------------------
 
-export default function JobsPage() {
+function JobsPageInner() {
   const searchParams = useSearchParams();
 
   // Search state
@@ -864,5 +864,13 @@ export default function JobsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function JobsPage() {
+  return (
+    <Suspense>
+      <JobsPageInner />
+    </Suspense>
   );
 }
