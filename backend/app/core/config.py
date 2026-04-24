@@ -33,7 +33,11 @@ class Settings(BaseSettings):
         if url.startswith("postgres://"):
             url = url.replace("postgres://", "postgresql://", 1)
         if url.startswith("postgresql://"):
-            return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            # asyncpg doesn't support channel_binding or sslmode params;
+            # SSL is handled via connect_args in engine config
+            for param in ["channel_binding=require", "sslmode=require"]:
+                url = url.replace(f"&{param}", "").replace(f"?{param}&", "?").replace(f"?{param}", "")
         return url
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
