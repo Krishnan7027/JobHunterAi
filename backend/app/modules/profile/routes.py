@@ -127,14 +127,27 @@ async def upload_cv(
 
 
 @cv_router.get("/profiles", response_model=list[ProfileOut])
-async def list_profiles(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Profile).order_by(Profile.created_at.desc()))
+async def list_profiles(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Profile)
+        .where(Profile.user_id == user.id)
+        .order_by(Profile.created_at.desc())
+    )
     return result.scalars().all()
 
 
 @cv_router.get("/profiles/{profile_id}", response_model=ProfileOut)
-async def get_profile_by_id(profile_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Profile).where(Profile.id == profile_id))
+async def get_profile_by_id(
+    profile_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Profile).where(Profile.id == profile_id, Profile.user_id == user.id)
+    )
     profile = result.scalar_one_or_none()
     if not profile:
         raise HTTPException(404, "Profile not found")
@@ -142,8 +155,14 @@ async def get_profile_by_id(profile_id: int, db: AsyncSession = Depends(get_db))
 
 
 @cv_router.delete("/profiles/{profile_id}")
-async def delete_profile(profile_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Profile).where(Profile.id == profile_id))
+async def delete_profile(
+    profile_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Profile).where(Profile.id == profile_id, Profile.user_id == user.id)
+    )
     profile = result.scalar_one_or_none()
     if not profile:
         raise HTTPException(404, "Profile not found")
