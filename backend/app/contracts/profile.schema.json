@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Profile",
+  "type": "object",
+  "required": ["id"],
+  "properties": {
+    "id": { "type": "integer" },
+    "user_id": { "type": ["integer", "null"] },
+    "name": { "type": ["string", "null"] },
+    "email": { "type": ["string", "null"] },
+    "summary": { "type": ["string", "null"] },
+    "skills": { "type": "array", "items": { "type": "string" } },
+    "experience": { "type": "array", "items": { "type": "object" } },
+    "education": { "type": "array", "items": { "type": "object" } },
+    "tools": { "type": "array", "items": { "type": "string" } },
+    "domains": { "type": "array", "items": { "type": "string" } },
+    "preferred_roles": { "type": "array", "items": { "type": "string" } }
+  }
+}

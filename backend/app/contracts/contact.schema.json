@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Contact",
+  "type": "object",
+  "required": ["id", "source_url", "extraction_type", "verified", "created_at"],
+  "properties": {
+    "id": { "type": "integer" },
+    "name": { "type": ["string", "null"] },
+    "role": { "type": ["string", "null"] },
+    "company": { "type": ["string", "null"] },
+    "email": { "type": ["string", "null"], "format": "email" },
+    "profile_url": { "type": ["string", "null"], "format": "uri" },
+    "source_url": { "type": "string", "description": "REQUIRED - proof of extraction" },
+    "extraction_type": { "type": "string", "enum": ["job_posting", "company_page", "public_profile"] },
+    "verified": { "type": "boolean" },
+    "notes": { "type": ["string", "null"] },
+    "created_at": { "type": "string", "format": "date-time" }
+  }
+}

@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Cache
+.cache/
+backend/.cache/
+
+# Uploads (user data)
+backend/uploads/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (frontend submodule has own .gitignore)
+node_modules/
+
+# Playwright MCP artifacts
+.playwright-mcp/
+
+# Screenshots / temp images
+dashboard-check.png
+
+# Next.js
+.next/
+out/
