@@ -208,10 +208,11 @@ export interface FetchJobsResult {
   location: string | null;
 }
 
-export async function fetchJobs(query: string, location?: string, sources?: string[], maxResults?: number): Promise<FetchJobsResult> {
+export async function fetchJobs(query: string, location?: string, sources?: string[], signal?: AbortSignal, maxResults?: number): Promise<FetchJobsResult> {
   return request("/jobs/fetch", {
     method: "POST",
-    body: JSON.stringify({ query, location, sources: sources || ["google"], max_results: maxResults || 20 }),
+    body: JSON.stringify({ query, location, sources: sources || ["linkedin"], max_results: maxResults || 20 }),
+    signal,
   });
 }
 

@@ -31,7 +31,7 @@ async def get_jobs(
     Returns (jobs_list, source_label).
     """
     if sources is None:
-        sources = ["indeed"]
+        sources = ["linkedin"]
 
     # Check cache (10 min TTL)
     from app.core.cache import cache_manager
@@ -70,19 +70,21 @@ async def get_jobs(
         else:
             logger.warning("Source '%s': 0 jobs found", src)
 
-    # Threshold-based fallback — ONLY if results too few
+    # Threshold-based fallback chain: naukri → google → indeed
     if len(jobs) < MIN_RESULTS:
-        # Try Indeed as fallback (most reliable)
-        if "indeed" not in sources:
+        fallback_chain = ["naukri", "google", "indeed"]
+        for fb_src in fallback_chain:
+            if fb_src in sources or len(jobs) >= MIN_RESULTS:
+                continue
             logger.warning(
-                "Only %d jobs from %s (below threshold %d) — fallback to Indeed",
-                len(jobs), sources, MIN_RESULTS,
+                "Only %d jobs from %s (below threshold %d) — fallback to %s",
+                len(jobs), sources, MIN_RESULTS, fb_src,
             )
-            indeed_jobs = await _scrape_source("indeed", query, location, max_results - len(jobs))
-            if indeed_jobs:
-                jobs.extend(indeed_jobs)
-                sources_used.append("indeed_fallback")
-                platform_counts["indeed_fallback"] = len(indeed_jobs)
+            fb_jobs = await _scrape_source(fb_src, query, location, max_results - len(jobs))
+            if fb_jobs:
+                jobs.extend(fb_jobs)
+                sources_used.append(f"{fb_src}_fallback")
+                platform_counts[f"{fb_src}_fallback"] = len(fb_jobs)
                 fallback_used = True
 
     # Deduplicate

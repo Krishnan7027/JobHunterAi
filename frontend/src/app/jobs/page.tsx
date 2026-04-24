@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, Suspense } from "react";
+import { useState, useCallback, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -70,10 +70,10 @@ const SORT_OPTIONS = [
 ] as const;
 
 const SOURCE_OPTIONS = [
-  { value: "indeed", label: "Indeed" },
   { value: "linkedin", label: "LinkedIn" },
   { value: "naukri", label: "Naukri" },
   { value: "google", label: "Google (All)" },
+  { value: "indeed", label: "Indeed" },
   { value: "hidden", label: "Hidden Jobs" },
 ] as const;
 
@@ -356,7 +356,8 @@ function JobsPageInner() {
   const [query, setQuery] = useState("");
   const [location, setLocation] = useState("india");
   const [workType, setWorkType] = useState("all");
-  const [platform, setSource] = useState<string>("indeed");
+  const [platform, setSource] = useState<string>("linkedin");
+  const abortRef = useRef<AbortController | null>(null);
 
   // Data state
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -371,6 +372,11 @@ function JobsPageInner() {
   // Filter / sort state
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("created_at");
+
+  // Abort search on unmount (navigation / refresh)
+  useEffect(() => {
+    return () => cancelSearch();
+  }, [cancelSearch]);
 
   // Load existing jobs on mount
   useEffect(() => {
@@ -401,9 +407,23 @@ function JobsPageInner() {
     }
   }, [searchParams, autoSearchDone]);
 
+  // Cancel any in-flight search
+  const cancelSearch = useCallback(() => {
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
+    setSearching(false);
+  }, []);
+
   // Search handler
   const handleSearch = useCallback(async () => {
     if (!query.trim()) return;
+    // Abort previous search if still running
+    cancelSearch();
+
+    const controller = new AbortController();
+    abortRef.current = controller;
     setSearching(true);
     setError(null);
     try {
@@ -418,16 +438,19 @@ function JobsPageInner() {
       const result = await fetchJobs(
         searchQuery,
         loc,
-        [platform]
+        [platform],
+        controller.signal
       );
       setJobs(result.jobs);
       setSearchSource(result.source);
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : "Search failed");
     } finally {
       setSearching(false);
+      abortRef.current = null;
     }
-  }, [query, location, workType, platform]);
+  }, [query, location, workType, platform, cancelSearch]);
 
   // Auto-trigger search when query set from URL
   useEffect(() => {
@@ -703,10 +726,11 @@ function JobsPageInner() {
           <Button
             variant="outline"
             onClick={() => {
+              cancelSearch();
               setQuery("");
               setLocation("india");
               setWorkType("all");
-              setSource("indeed");
+              setSource("linkedin");
               setSearchSource(null);
               setError(null);
               setJobs([]);

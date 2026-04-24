@@ -53,5 +53,5 @@ class JobStatusUpdate(BaseModel):
 class JobFetchRequest(BaseModel):
     query: str
     location: Optional[str] = None
-    sources: list[str] = Field(default=["google"])
+    sources: list[str] = Field(default=["linkedin"])
     max_results: int = 20
